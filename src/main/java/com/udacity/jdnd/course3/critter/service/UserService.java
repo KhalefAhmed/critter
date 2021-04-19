@@ -3,6 +3,8 @@ package com.udacity.jdnd.course3.critter.service;
 import com.udacity.jdnd.course3.critter.entity.Customer;
 import com.udacity.jdnd.course3.critter.entity.Employee;
 import com.udacity.jdnd.course3.critter.entity.Pet;
+import com.udacity.jdnd.course3.critter.exceptions.CustomerNotFoundException;
+import com.udacity.jdnd.course3.critter.exceptions.EmployeeNotFoundException;
 import com.udacity.jdnd.course3.critter.exceptions.PetNotFoundException;
 import com.udacity.jdnd.course3.critter.repository.CustomerRepository;
 import com.udacity.jdnd.course3.critter.repository.EmployeeRepository;
@@ -52,4 +54,7 @@ public class UserService {
         return employeeRepository.findById(id);
     }
 
+    public Customer findOwnerByPet(Long id) throws CustomerNotFoundException {
+        return customerRepository.findOptionalByPetId(id).orElseThrow(() -> new CustomerNotFoundException("ID: " + id));
+    }
 }
