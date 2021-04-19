@@ -9,6 +9,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,7 +50,20 @@ public class PetController {
 
     @GetMapping
     public List<PetDTO> getPets(){
-        throw new UnsupportedOperationException();
+
+        List<Pet> pets = petService.findAllPets();
+        List<PetDTO> dtos = new ArrayList<>();
+        pets.forEach(pet -> {
+            dtos.add(new PetDTO(
+                    pet.getId().longValue(),
+                    pet.getType(),
+                    pet.getName(),
+                    pet.getOwner().getId().longValue(),
+                    pet.getBirthDate(),
+                    pet.getNotes()));
+        });
+
+        return dtos;
     }
 
     @GetMapping("/owner/{ownerId}")
