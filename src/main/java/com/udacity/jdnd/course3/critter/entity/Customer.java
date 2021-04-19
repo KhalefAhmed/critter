@@ -1,11 +1,15 @@
 package com.udacity.jdnd.course3.critter.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -17,4 +21,10 @@ public class Customer extends User{
 
     @Column(length=5000)
     private String notes;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "owner", orphanRemoval = true)
+    @LazyCollection(LazyCollectionOption.TRUE)
+    @JsonIgnoreProperties("owner")
+    @JsonManagedReference
+    private List<Pet> pets = new ArrayList<>();
 }
