@@ -30,4 +30,16 @@ public class Schedule {
     @JsonBackReference
     @JsonIgnoreProperties("schedules")
     private List<Employee> employees;
+
+    @ManyToMany
+    @LazyCollection(LazyCollectionOption.TRUE)
+    @JoinTable(
+            name = "schedule_pet",
+            joinColumns = { @JoinColumn(name = "schedule_id")},
+            inverseJoinColumns = {@JoinColumn(name = "pet_id")}
+    )
+    @JsonBackReference
+    @JsonIgnoreProperties("schedules")
+    private List<Pet> pets;
+
 }
