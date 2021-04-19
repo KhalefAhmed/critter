@@ -6,15 +6,16 @@ import lombok.Setter;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "user")
-@Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "pet")
 @Getter
 @Setter
-public class User {
+public class Pet {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(length=500)
+    private PetType type;
+
     private String name;
 }
