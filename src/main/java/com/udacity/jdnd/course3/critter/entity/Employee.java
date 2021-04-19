@@ -24,7 +24,10 @@ public class Employee extends User{
             name="employee_skill",
             joinColumns = @JoinColumn(name="id"), uniqueConstraints = @UniqueConstraint(columnNames = {"ID", "SKILL"})
     )
+    @Column(name="skill")
     private Set<EmployeeSkill> skills;
+
+
 
     @ElementCollection
     @CollectionTable(
@@ -32,6 +35,9 @@ public class Employee extends User{
             joinColumns = @JoinColumn(name="id"), uniqueConstraints = @UniqueConstraint(columnNames = {"ID", "DAY"}))
     @Column(name="day")
     private Set<DayOfWeek> daysAvailable;
+
+
+
 
     @ManyToMany(mappedBy = "employees")
     @LazyCollection(LazyCollectionOption.TRUE)
