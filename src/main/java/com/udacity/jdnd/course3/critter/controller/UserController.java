@@ -4,7 +4,9 @@ import com.udacity.jdnd.course3.critter.dto.CustomerDTO;
 import com.udacity.jdnd.course3.critter.dto.EmployeeDTO;
 import com.udacity.jdnd.course3.critter.dto.EmployeeRequestDTO;
 import com.udacity.jdnd.course3.critter.entity.Customer;
+import com.udacity.jdnd.course3.critter.entity.Employee;
 import com.udacity.jdnd.course3.critter.entity.Pet;
+import com.udacity.jdnd.course3.critter.exceptions.EmployeeNotFoundException;
 import com.udacity.jdnd.course3.critter.exceptions.PetNotFoundException;
 import com.udacity.jdnd.course3.critter.service.PetService;
 import com.udacity.jdnd.course3.critter.service.UserService;
@@ -62,12 +64,18 @@ public class UserController {
 
     @PostMapping("/employee")
     public EmployeeDTO saveEmployee(@RequestBody EmployeeDTO employeeDTO) {
-        throw new UnsupportedOperationException();
+        Long id = Optional.ofNullable(employeeDTO.getId()).orElse(Long.valueOf(-1));
+        Employee e = userService.findEmployee(id).orElseGet(Employee::new);
+        BeanUtils.copyProperties(employeeDTO,e,PROPERTIES_TO_IGNORE_ON_COPY);
+        e = userService.save(e);
+        return copyEmployeeToDTO(e);
     }
 
-    @PostMapping("/employee/{employeeId}")
+    @GetMapping("/employee/{employeeId}")
     public EmployeeDTO getEmployee(@PathVariable long employeeId) {
-        throw new UnsupportedOperationException();
+
+        Employee employee = userService.findEmployee(employeeId).orElseThrow(() -> new EmployeeNotFoundException("ID: " + employeeId));
+        return copyEmployeeToDTO(employee);
     }
 
     @PutMapping("/employee/{employeeId}")
@@ -80,6 +88,11 @@ public class UserController {
         throw new UnsupportedOperationException();
     }
 
+    private EmployeeDTO copyEmployeeToDTO(Employee employee) {
+        EmployeeDTO dto = new EmployeeDTO();
+        BeanUtils.copyProperties(employee, dto);
+        return dto;
+    }
 
     private CustomerDTO copyCustomerToDTO(Customer c){
         CustomerDTO dto = new CustomerDTO();
