@@ -4,6 +4,8 @@ import com.udacity.jdnd.course3.critter.dto.CustomerDTO;
 import com.udacity.jdnd.course3.critter.dto.EmployeeDTO;
 import com.udacity.jdnd.course3.critter.dto.EmployeeRequestDTO;
 import com.udacity.jdnd.course3.critter.entity.Customer;
+import com.udacity.jdnd.course3.critter.entity.Pet;
+import com.udacity.jdnd.course3.critter.exceptions.PetNotFoundException;
 import com.udacity.jdnd.course3.critter.service.PetService;
 import com.udacity.jdnd.course3.critter.service.UserService;
 import org.springframework.beans.BeanUtils;
@@ -48,12 +50,14 @@ public class UserController {
 
     @GetMapping("/customer")
     public List<CustomerDTO> getAllCustomers(){
-        throw new UnsupportedOperationException();
+        List<Customer> customers = userService.getAllCustomers();
+        return copyCustomersToDTOs(customers);
     }
 
     @GetMapping("/customer/pet/{petId}")
-    public CustomerDTO getOwnerByPet(@PathVariable long petId){
-        throw new UnsupportedOperationException();
+    public CustomerDTO getOwnerByPet(@PathVariable long petId) throws PetNotFoundException {
+        Pet p = petService.findPet(petId).orElseThrow(() -> new PetNotFoundException("ID: " + petId));
+        return copyCustomerToDTO(p.getOwner());
     }
 
     @PostMapping("/employee")
@@ -84,5 +88,14 @@ public class UserController {
             dto.getPetIds().add(pet.getId());
         });
         return dto;
+    }
+
+    private List<CustomerDTO> copyCustomersToDTOs (List<Customer> customers) {
+        List dtos = new ArrayList<CustomerDTO>();
+        // convert to DTO
+        customers.forEach( c -> {
+            dtos.add(this.copyCustomerToDTO((Customer)c));
+        });
+        return dtos;
     }
 }
