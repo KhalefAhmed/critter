@@ -11,6 +11,7 @@ import com.udacity.jdnd.course3.critter.exceptions.PetNotFoundException;
 import com.udacity.jdnd.course3.critter.service.PetService;
 import com.udacity.jdnd.course3.critter.service.UserService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
@@ -37,6 +38,7 @@ public class UserController {
 
     private PetService petService;
 
+
     public UserController(UserService userService, PetService petService) {
         this.userService = userService;
         this.petService = petService;
@@ -59,42 +61,42 @@ public class UserController {
     }
 
     @GetMapping("/customer/pet/{petId}")
-    public CustomerDTO getOwnerByPet(@PathVariable long petId) throws PetNotFoundException {
+    public CustomerDTO getOwnerByPet(@PathVariable long petId) throws PetNotFoundException{
         Pet p = petService.findPet(petId).orElseThrow(() -> new PetNotFoundException("ID: " + petId));
         return copyCustomerToDTO(p.getOwner());
     }
 
     @PostMapping("/employee")
     public EmployeeDTO saveEmployee(@RequestBody EmployeeDTO employeeDTO) {
-        Long id = Optional.ofNullable(employeeDTO.getId()).orElse(Long.valueOf(-1));
-        Employee e = userService.findEmployee(id).orElseGet(Employee::new);
-        BeanUtils.copyProperties(employeeDTO,e,PROPERTIES_TO_IGNORE_ON_COPY);
+        Employee e = userService.findEmployee(employeeDTO.getId()).orElseGet(Employee::new);
+        BeanUtils.copyProperties(employeeDTO, e, PROPERTIES_TO_IGNORE_ON_COPY);
         e = userService.save(e);
         return copyEmployeeToDTO(e);
     }
 
     @GetMapping("/employee/{employeeId}")
-    public EmployeeDTO getEmployee(@PathVariable long employeeId) {
-
-        Employee employee = userService.findEmployee(employeeId).orElseThrow(() -> new EmployeeNotFoundException("ID: " + employeeId));
-        return copyEmployeeToDTO(employee);
-    }
-
-    @PutMapping("/employee/{employeeId}")
-    public void setAvailability(@RequestBody Set<DayOfWeek> daysAvailable, @PathVariable long employeeId) {
-        throw new UnsupportedOperationException();
+    public EmployeeDTO getEmployee(@PathVariable long employeeId) throws EmployeeNotFoundException {
+        Employee e = userService.findEmployee(employeeId).orElseThrow(() -> new EmployeeNotFoundException("ID: " + employeeId));
+        return copyEmployeeToDTO(e);
     }
 
     @GetMapping("/employees")
     public List<EmployeeDTO> getEmployees() {
         List<Employee> employees = userService.findEmployees();
-        return employees.stream().map((e) -> {return copyEmployeeToDTO(e);}).collect(Collectors.toList());
+        return employees.stream().map(this::copyEmployeeToDTO).collect(Collectors.toList());
     }
 
     @Transactional
+    @PutMapping("/employee/{employeeId}")
+    public void setAvailability(@RequestBody Set<DayOfWeek> daysAvailable, @PathVariable long employeeId) throws EmployeeNotFoundException {
+        Employee e = userService.findEmployee(employeeId).orElseThrow(() -> new EmployeeNotFoundException("ID: " + employeeId));
+        e.setDaysAvailable(daysAvailable);
+        userService.save(e);
+    }
+
     @GetMapping("/employee/availability")
-    public List<EmployeeDTO> findEmployeesForService(@RequestBody EmployeeRequestDTO employeeDTO) {
-        List<Employee> employees = userService.findAvailableEmployees(employeeDTO.getSkills(), employeeDTO.getDate());
+    public List<EmployeeDTO> findEmployeesForService(@RequestBody EmployeeRequestDTO employeeRequestDTO)  {
+        List<Employee> employees = userService.findAvailableEmployees(employeeRequestDTO.getSkills(), employeeRequestDTO.getDate());
         return employees.stream().map(this::copyEmployeeToDTO).collect(Collectors.toList());
     }
 
@@ -121,4 +123,5 @@ public class UserController {
         });
         return dtos;
     }
+
 }
