@@ -66,4 +66,9 @@ public class ScheduleService {
         return s;
     }
 
+    public List<Schedule> findSchedulesForPet(long petId) {
+        Pet p = petRepository.findById(petId).orElseThrow(() -> new PetNotFoundException("ID: " + petId));
+        return p.getSchedules();
+    }
+
 }
