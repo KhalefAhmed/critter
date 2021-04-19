@@ -68,6 +68,18 @@ public class PetController {
 
     @GetMapping("/owner/{ownerId}")
     public List<PetDTO> getPetsByOwner(@PathVariable long ownerId) {
-        throw new UnsupportedOperationException();
+        List<Pet> pets = petService.findPetsByOwner(ownerId);
+        List<PetDTO> dtos = new ArrayList<>();
+        pets.forEach(pet -> {
+            dtos.add(new PetDTO(
+                    pet.getId().longValue(),
+                    pet.getType(),
+                    pet.getName(),
+                    pet.getOwner().getId().longValue(),
+                    pet.getBirthDate(),
+                    pet.getNotes()));
+        });
+
+        return dtos;
     }
 }
