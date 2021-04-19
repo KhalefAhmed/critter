@@ -13,11 +13,13 @@ import com.udacity.jdnd.course3.critter.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Handles web requests related to Users.
@@ -83,9 +85,17 @@ public class UserController {
         throw new UnsupportedOperationException();
     }
 
+    @GetMapping("/employees")
+    public List<EmployeeDTO> getEmployees() {
+        List<Employee> employees = userService.findEmployees();
+        return employees.stream().map((e) -> {return copyEmployeeToDTO(e);}).collect(Collectors.toList());
+    }
+
+    @Transactional
     @GetMapping("/employee/availability")
     public List<EmployeeDTO> findEmployeesForService(@RequestBody EmployeeRequestDTO employeeDTO) {
-        throw new UnsupportedOperationException();
+        List<Employee> employees = userService.findAvailableEmployees(employeeDTO.getSkills(), employeeDTO.getDate());
+        return employees.stream().map(this::copyEmployeeToDTO).collect(Collectors.toList());
     }
 
     private EmployeeDTO copyEmployeeToDTO(Employee employee) {
