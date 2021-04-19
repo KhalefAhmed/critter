@@ -8,7 +8,9 @@ import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -42,4 +44,13 @@ public class Schedule {
     @JsonIgnoreProperties("schedules")
     private List<Pet> pets;
 
+
+    private LocalDate date;
+
+    @ElementCollection
+    @CollectionTable(
+            name="schedule_activities",
+            joinColumns = @JoinColumn(name="id"))
+    @Column(name="activities")
+    private Set<EmployeeSkill> activities;
 }
