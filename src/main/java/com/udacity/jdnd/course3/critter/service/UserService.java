@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -72,4 +73,24 @@ public class UserService {
         List<Employee> employees = employeeRepository.findAllById(employeesIds);
         return employees;
     }
+
+    public List<Employee> findEmployees(List<Long> employeeIds) throws EmployeeNotFoundException {
+        List<Employee> employees = employeeRepository.findAllById(employeeIds);
+
+        if (employeeIds.size() != employees.size()) {
+            List<Long> found = employees.stream().map(e -> e.getId()).collect(Collectors.toList());
+            String missing = (String) employeeIds
+                    .stream()
+                    .filter( id -> !found.contains(id) )
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(", "));
+            throw new EmployeeNotFoundException("Could not find employee(s) with id(s): " + missing);
+        }
+        return employees;
+    }
+
+    public List<Employee> findEmployees() {
+        return employeeRepository.findAll();
+    }
+
 }
