@@ -49,7 +49,10 @@ public class ScheduleController {
 
     @GetMapping
     public List<ScheduleDTO> getAllSchedules() {
-        throw new UnsupportedOperationException();
+
+       List<Schedule> schedules = scheduleService.findAllSchedules();
+
+       return copySchedulesToDTO(schedules);
     }
 
     @GetMapping("/pet/{petId}")
