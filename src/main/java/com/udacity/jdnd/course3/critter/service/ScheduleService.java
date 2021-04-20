@@ -71,4 +71,11 @@ public class ScheduleService {
         return p.getSchedules();
     }
 
+    public List<Schedule> findSchedulesForEmployee(long employeeId) {
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new EmployeeNotFoundException("ID: " + employeeId));
+
+        return employee.getSchedules();
+    }
+
 }
