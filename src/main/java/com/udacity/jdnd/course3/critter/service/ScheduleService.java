@@ -1,8 +1,10 @@
 package com.udacity.jdnd.course3.critter.service;
 
+import com.udacity.jdnd.course3.critter.entity.Customer;
 import com.udacity.jdnd.course3.critter.entity.Employee;
 import com.udacity.jdnd.course3.critter.entity.Pet;
 import com.udacity.jdnd.course3.critter.entity.Schedule;
+import com.udacity.jdnd.course3.critter.exceptions.CustomerNotFoundException;
 import com.udacity.jdnd.course3.critter.exceptions.EmployeeNotFoundException;
 import com.udacity.jdnd.course3.critter.exceptions.PetNotFoundException;
 import com.udacity.jdnd.course3.critter.repository.CustomerRepository;
@@ -13,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ScheduleService {
@@ -76,6 +80,18 @@ public class ScheduleService {
                 .orElseThrow(() -> new EmployeeNotFoundException("ID: " + employeeId));
 
         return employee.getSchedules();
+    }
+
+    public List<Schedule> findSchedulesForCustomer(long customerId) {
+        Customer c = customerRepository.findById(customerId)
+                .orElseThrow(() -> new CustomerNotFoundException("ID: " + customerId));
+        List<Schedule> customerSchedules = c.getPets()
+                .stream()
+                .map(Pet::getSchedules)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+
+        return customerSchedules;
     }
 
 }
