@@ -5,10 +5,15 @@ import com.google.common.collect.Sets;
 import com.udacity.jdnd.course3.critter.controller.PetController;
 import com.udacity.jdnd.course3.critter.controller.UserController;
 import com.udacity.jdnd.course3.critter.dto.*;
+import com.udacity.jdnd.course3.critter.entity.Employee;
 import com.udacity.jdnd.course3.critter.entity.EmployeeSkill;
 import com.udacity.jdnd.course3.critter.entity.PetType;
 import com.udacity.jdnd.course3.critter.controller.ScheduleController;
+import com.udacity.jdnd.course3.critter.exceptions.EmployeeNotFoundException;
+import com.udacity.jdnd.course3.critter.service.PetService;
+import com.udacity.jdnd.course3.critter.service.UserService;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,6 +48,12 @@ public class CritterFunctionalTest {
 
     @Autowired
     private ScheduleController scheduleController;
+
+    @Autowired
+    private PetService petService;
+
+    @Autowired
+    private UserService userService;
 
     @Test
     @Order(1)
@@ -250,6 +262,41 @@ public class CritterFunctionalTest {
         compareSchedules(sched3, scheds2c.get(1));
     }
 
+    @Test
+    @Order(10)
+    public void testEmployeeNotFoundExceptionMessage (){
+        Long nonExistingId = 1000L;
+        String expectedMessage = "Could not find employee(s) with id(s): " + nonExistingId;
+        String actualMessage = null;
+        Employee employee = createEmployee();
+        employee = userService.save(employee);
+        List<Long> idList = new ArrayList<>();
+        idList.add(employee.getId());
+        idList.add(nonExistingId);
+
+        Assertions.assertThrows(EmployeeNotFoundException.class, () -> {
+            userService.findEmployees(idList);
+        });
+        // one missing id
+        try {
+            userService.findEmployees(idList);
+        } catch (EmployeeNotFoundException employeeNotFoundException){
+            actualMessage = employeeNotFoundException.getMessage();
+        }
+        Assertions.assertEquals(expectedMessage, actualMessage);
+
+        // two missing ids
+        nonExistingId++;
+        expectedMessage += ", " + nonExistingId;
+        idList.add(nonExistingId);
+        try {
+            userService.findEmployees(idList);
+        } catch (EmployeeNotFoundException employeeNotFoundException){
+            actualMessage = employeeNotFoundException.getMessage();
+        }
+        Assertions.assertEquals(expectedMessage, actualMessage);
+    }
+
 
     private static EmployeeDTO createEmployeeDTO() {
         EmployeeDTO employeeDTO = new EmployeeDTO();
@@ -303,6 +350,12 @@ public class CritterFunctionalTest {
                     return petController.savePet(p).getId();
                 }).collect(Collectors.toList());
         return scheduleController.createSchedule(createScheduleDTO(petIds, employeeIds, date, activities));
+    }
+
+    private static Employee createEmployee() {
+        Employee employee = new Employee();
+        employee.setName("TestEmployee");
+        return employee;
     }
 
     private static void compareSchedules(ScheduleDTO sched1, ScheduleDTO sched2) {
