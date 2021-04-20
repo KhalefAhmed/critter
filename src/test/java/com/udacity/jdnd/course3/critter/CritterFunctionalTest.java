@@ -5,11 +5,10 @@ import com.google.common.collect.Sets;
 import com.udacity.jdnd.course3.critter.controller.PetController;
 import com.udacity.jdnd.course3.critter.controller.UserController;
 import com.udacity.jdnd.course3.critter.dto.*;
-import com.udacity.jdnd.course3.critter.entity.Employee;
-import com.udacity.jdnd.course3.critter.entity.EmployeeSkill;
-import com.udacity.jdnd.course3.critter.entity.PetType;
+import com.udacity.jdnd.course3.critter.entity.*;
 import com.udacity.jdnd.course3.critter.controller.ScheduleController;
 import com.udacity.jdnd.course3.critter.exceptions.EmployeeNotFoundException;
+import com.udacity.jdnd.course3.critter.exceptions.PetNotFoundException;
 import com.udacity.jdnd.course3.critter.service.PetService;
 import com.udacity.jdnd.course3.critter.service.UserService;
 import org.junit.jupiter.api.Assertions;
@@ -297,6 +296,42 @@ public class CritterFunctionalTest {
         Assertions.assertEquals(expectedMessage, actualMessage);
     }
 
+    @Test
+    @Order(11)
+    public void testPetNotFoundException (){
+        Long nonExistingId = 1000L;
+        String expectedMessage = "Could not find pet(s) with id(s): " + nonExistingId;
+        String actualMessage = null;
+        Customer customer = createCustomer();
+        List<Long> idList = new ArrayList<>();
+        customer = userService.save(customer, idList);
+        Pet pet = createPet("Figaro", PetType.CAT);
+        pet = petService.save(pet, customer.getId());
+        idList.add(pet.getId());
+        idList.add(nonExistingId);
+
+        Assertions.assertThrows(PetNotFoundException.class, () -> {
+            petService.findPets(idList);
+        });
+        // one missing id
+        try {
+            petService.findPets(idList);
+        } catch (PetNotFoundException petNotFoundException){
+            actualMessage = petNotFoundException.getMessage();
+        }
+        Assertions.assertEquals(expectedMessage, actualMessage);
+
+        // two missing ids
+        nonExistingId++;
+        expectedMessage += ", " + nonExistingId;
+        idList.add(nonExistingId);
+        try {
+            petService.findPets(idList);
+        } catch (PetNotFoundException petNotFoundException){
+            actualMessage = petNotFoundException.getMessage();
+        }
+        Assertions.assertEquals(expectedMessage, actualMessage);
+    }
 
     private static EmployeeDTO createEmployeeDTO() {
         EmployeeDTO employeeDTO = new EmployeeDTO();
@@ -316,6 +351,13 @@ public class CritterFunctionalTest {
         petDTO.setName("TestPet");
         petDTO.setType(PetType.CAT);
         return petDTO;
+    }
+
+    private static Customer createCustomer() {
+        Customer customer = new Customer();
+        customer.setName("TestEmployee");
+        customer.setPhoneNumber("123-456-789");
+        return customer;
     }
 
     private static EmployeeRequestDTO createEmployeeRequestDTO() {
@@ -356,6 +398,13 @@ public class CritterFunctionalTest {
         Employee employee = new Employee();
         employee.setName("TestEmployee");
         return employee;
+    }
+
+    private static Pet createPet(String name, PetType type) {
+        Pet pet = new Pet();
+        pet.setName(name);
+        pet.setType(type);
+        return pet;
     }
 
     private static void compareSchedules(ScheduleDTO sched1, ScheduleDTO sched2) {
